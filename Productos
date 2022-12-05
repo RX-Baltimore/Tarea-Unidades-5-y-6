@@ -1,0 +1,125 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+class Product
+{
+    public string Codigo { get; set; }
+    public string Descripcion { get; set; }
+    public int Departamento { get; set; }
+    public int Likes { get; set; }
+    public decimal Precio { get; set; }
+
+    public Product(string c, string dc,int dp,int l, decimal p)
+    { Codigo = c; Descripcion = dc;Departamento = dp;Likes =  l; Precio = p; }
+
+    public override string ToString()
+    {
+        return String.Format($"{Codigo}  {Descripcion} {Departamento} Likes: {Likes} Precio:{Precio} ");
+    }
+}
+
+class ProductDB
+{
+    public static void SaveText(List<Product> productos, String path)
+    {
+        StreamWriter sw = new StreamWriter(
+           new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write)
+           );
+
+        foreach (var producto in productos)
+        {
+            sw.WriteLine($"{producto.Codigo}|{producto.Descripcion}|{producto.Departamento}|{producto.Likes}|{producto.Precio}");
+        }
+        sw.Close();
+    }
+
+    public static void SaveBin(List<Product> products, String path)
+    {
+        BinaryWriter bw = new BinaryWriter(
+            new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write)
+            );
+        foreach (var product in products)
+        {
+            bw.Write(product.Codigo);
+            bw.Write(product.Descripcion);
+            bw.Write(product.Departamento);
+            bw.Write(product.Likes);
+            bw.Write(product.Precio);
+        }
+        bw.Close();
+    }
+
+    public static List<Product> GetText(String path)
+    {
+        List<Product> products = new();
+        StreamReader sr = new StreamReader(
+           new FileStream(path, FileMode.Open, FileAccess.Read)
+           );
+
+        while (sr.Peek() != -1)
+        {
+            String? row = sr.ReadLine();
+            String[] columns = row.Split("|");
+            products.Add(new Product(columns[0], columns[1],int.Parse(columns[2]), int.Parse(columns[3]), Decimal.Parse(columns[4])));
+        }
+        sr.Close();
+
+        return products;
+    }
+
+    public static List<Product> GetBin(String path)
+    {
+        List<Product> products = new();
+        BinaryReader br = new BinaryReader(
+           new FileStream(path, FileMode.Open, FileAccess.Read)
+           );
+
+        while (br.PeekChar() != -1)
+        {
+            products.Add(new Product(
+                  br.ReadString(), br.ReadString(),br.ReadInt32() ,br.ReadInt32(), br.ReadDecimal()
+                  ));
+        }
+        br.Close();
+
+        return products;
+    }
+}
+
+
+class Program
+{
+    static void Main()
+    {
+        Console.WriteLine("Lista de Productos");
+        List<Product> products = new();
+        products.Add(new Product("AAA", "Vasos desechables", 01, 140,140));
+        products.Add(new Product("AAB", "Carbon", 05, 124, 17));
+        products.Add(new Product("AAD", "Coca de tres litros", 07, 560, 21));
+        products.Add(new Product("AAC", "Carne para asar", 06, 856, 1250));
+        products.Add(new Product("AAD", "Queso", 07, 250, 25));
+
+
+
+
+        foreach (var p in products)
+            Console.WriteLine(p);
+        Console.WriteLine();
+
+        ProductDB.SaveText(products, @"C:\Users\HPU56500T\Desktop\\productos.txt");
+        List<Product> productsArchivot = ProductDB.GetText(@"C:\Users\HPU56500T\Desktop\\productos.txt");
+
+        List<Product> productsArchivos = ProductDB.GetText(@"C:\Users\HPU56500T\Desktop\\productos.txt");
+        foreach (var p in productsArchivot)
+
+
+            ProductDB.SaveBin(products, @"C:\Users\HPU56500T\Desktop\\productos.bin");
+        List<Product> productsArchivob = ProductDB.GetText(@"C:\Users\HPU56500T\Desktop\\productos.txt");
+
+        List<Product> productsArchivo = ProductDB.GetBin(@"C:\Users\HPU56500T\Desktop\\productos.bin");
+        foreach (var p in productsArchivo) ;
+
+    }
+}
